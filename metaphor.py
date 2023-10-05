@@ -27,8 +27,7 @@ app.config.from_mapping(app_config)
 cache = Cache(app)
 CORS(app)
 
-metaphor = Metaphor("09fa84ef-9142-4876-8df9-5ec6a51bd84a")
-# os.environ['OPENAI_API_KEY'] = config.OPENAI_API_KEY
+metaphor = Metaphor(config.METAPHOR_API_KEY)
 openai.api_key = config.OPENAI_API_KEY 
 
 class Event(BaseModel):
@@ -49,7 +48,6 @@ class EventList(BaseModel):
 @app.route("/event", methods=["GET"])
 def get_datetime():
     id = request.args.get('id')
-    print(id)
     [content] = metaphor.get_contents([id]).contents
 
     document = Document(
@@ -102,13 +100,14 @@ def query():
     '''
 
     # Get a list of events from metaphor API
+    location = request.args.get('location')
     try: 
         today = datetime.date.today()
         first = today.replace(day=1)
         last_month = first - datetime.timedelta(days=1)
 
         response = metaphor.search(
-            "Check out this exciting recent event happening in Philadelphia",
+            "Check out this exciting recent event happening in " + location,
             num_results=5,
             start_crawl_date=last_month.isoformat(),
             use_autoprompt=True,
@@ -125,6 +124,10 @@ def rec():
     '''
     return a list of similar links by calling the Find Similar route
     '''
+    data = request.get_json()
+    res = metaphor.find_similar(data["url"]).results
+
+    return res, 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5601)
