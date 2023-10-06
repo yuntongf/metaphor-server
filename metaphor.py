@@ -46,7 +46,10 @@ class EventList(BaseModel):
 
 @cache.cached(timeout=50, key_prefix='events')
 @app.route("/event", methods=["GET"])
-def get_datetime():
+def get_event_details():
+    '''
+    Get the details (especailly year, month, day, and extra_info) of an event given it's id
+    '''
     id = request.args.get('id')
     [content] = metaphor.get_contents([id]).contents
 
@@ -80,8 +83,6 @@ def get_datetime():
     The JSON object:
     '''
     event_obj = query_engine.query(query)
-    # res = res.model_dump() # serialize to a list of json objects
-    # print(event_obj)
     res = {
         "id": event_obj.id,
         "url": event_obj.url,
@@ -94,7 +95,7 @@ def get_datetime():
     return res, 200
 
 @app.route("/", methods=["GET"])
-def query():
+def get_events():
     '''
     Get a list of events from metaphor API and convert to proper json format for the frontend
     '''
@@ -120,7 +121,7 @@ def query():
 
 
 @app.route("/rec", methods=["POST"])
-def rec():
+def get_similar_links():
     '''
     return a list of similar links by calling the Find Similar route
     '''
